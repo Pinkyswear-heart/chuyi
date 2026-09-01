@@ -1,0 +1,20 @@
+{
+  "data_dir": "D:\\pyobject\\vib coding\\deepseek harness\\deepseek harness\\chu_and_luo\\dataset_augmented_v2",
+  "arch": "cnn",
+  "pretrained": false,
+  "width_mult": 1.0,
+  "epochs": 60,
+  "batch_size": 64,
+  "lr": null,
+  "img_size": 224,
+  "num_workers": 4,
+  "patience": 12,
+  "seed": 42,
+  "output_dir": "D:\\pyobject\\vib coding\\deepseek harness\\deepseek harness\\chu_and_luo\\cnn_classifier\\local_outputs",
+  "resume": null,
+  "weighted_loss": true,
+  "label_smoothing": 0.0,
+  "amp": null,
+  "benchmark": true,
+  "limit": 0
+}

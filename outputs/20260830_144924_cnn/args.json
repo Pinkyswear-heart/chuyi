@@ -1,0 +1,19 @@
+{
+  "data_dir": "..\\dataset_augmented",
+  "arch": "cnn",
+  "pretrained": false,
+  "width_mult": 1.0,
+  "epochs": 60,
+  "batch_size": 64,
+  "lr": null,
+  "img_size": 224,
+  "num_workers": 8,
+  "patience": 12,
+  "seed": 42,
+  "output_dir": "outputs",
+  "resume": null,
+  "weighted_loss": true,
+  "label_smoothing": 0.0,
+  "amp": null,
+  "limit": 0
+}

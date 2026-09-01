@@ -1,0 +1,6 @@
+test_loss: 0.2483
+test_acc: 0.9076
+test_precision: 0.9274
+test_recall: 0.9405
+test_f1: 0.9339
+test_auc: 0.9595

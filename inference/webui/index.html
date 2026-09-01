@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNN 图像分类 - 推理界面</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="logo">🧠</span>
+      <div>
+        <h1>CNN 图像分类推理</h1>
+        <p class="sub">洛天依 (lty) vs 初音未来 (miku) · ONNX 本地推理</p>
+      </div>
+    </div>
+    <div class="status-chip" id="statusChip">
+      <span class="dot"></span><span id="statusText">连接服务中…</span>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- ================= 左侧：上传面板 ================= -->
+  <aside class="panel upload-panel">
+    <section class="card">
+      <h2 class="card-title">📤 图片上传</h2>
+      <label class="field-label" for="modelSelect">推理模型</label>
+      <select id="modelSelect" class="select"></select>
+      <div class="model-hint" id="modelHint"></div>
+
+      <div id="dropZone" class="dropzone" tabindex="0">
+        <div class="dz-icon">🖼️</div>
+        <p class="dz-main">拖拽图片到这里，或 <span class="link">点击选择</span></p>
+        <p class="dz-sub">支持多选 / 混合格式 (jpg · png · webp · bmp · gif)</p>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+      </div>
+
+      <div id="fileList" class="file-list"></div>
+
+      <div class="btn-row">
+        <button id="predictBtn" class="btn primary" disabled>
+          <span class="btn-icon">▶</span> 开始推理
+        </button>
+        <button id="clearBtn" class="btn ghost" disabled>清空</button>
+      </div>
+      <p id="uploadStatus" class="upload-status"></p>
+    </section>
+
+    <section class="card info-card">
+      <h2 class="card-title">ℹ️ 判定规则</h2>
+      <ul class="rule-list">
+        <li><b>置信度 &lt; 0.60</b> 或能量/特征异常 → 判为 <b class="tag-unknown">未知</b></li>
+        <li>增强版模型 (augmented) 启用 <b>三信号 OOD 拒识</b>：能量 · 置信度 · 特征距离</li>
+        <li>模型加载一次后缓存，多张图片批量推理（CPU 每批 8 张）</li>
+      </ul>
+    </section>
+  </aside>
+
+  <!-- ================= 右侧：结果区 ================= -->
+  <section class="panel result-panel">
+    <div class="tabs">
+      <button class="tab active" data-tab="predict">🔍 图片推理</button>
+      <button class="tab" data-tab="evaluate">📊 准确率验证</button>
+    </div>
+
+    <!-- -------- 推理结果 -------- -->
+    <div id="tab-predict" class="tab-body active">
+      <div id="summaryRow" class="summary-row hidden">
+        <div class="summary-chip total">共 <b id="sumTotal">0</b> 张</div>
+        <div class="summary-chip lty">洛天依 <b id="sumLty">0</b></div>
+        <div class="summary-chip miku">初音未来 <b id="sumMiku">0</b></div>
+        <div class="summary-chip unknown">未知 <b id="sumUnknown">0</b></div>
+        <div class="summary-chip fail">失败 <b id="sumFail">0</b></div>
+      </div>
+      <div id="resultsGrid" class="results-grid"></div>
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p>上传图片后点击「开始推理」<br>结果将显示在这里</p>
+      </div>
+    </div>
+
+    <!-- -------- 准确率验证 -------- -->
+    <div id="tab-evaluate" class="tab-body">
+      <div class="eval-form card">
+        <div class="eval-row">
+          <div class="eval-field grow">
+            <label class="field-label" for="evalFolder">数据集目录（ImageFolder 结构，子文件夹=类别）</label>
+            <input id="evalFolder" class="text-input" type="text"
+                   placeholder="例如: D:\...\dataset\test">
+          </div>
+          <div class="eval-field">
+            <label class="field-label" for="evalModel">模型</label>
+            <select id="evalModel" class="select"></select>
+          </div>
+          <button id="evalBtn" class="btn primary">运行验证</button>
+        </div>
+        <p class="upload-status" id="evalStatus"></p>
+      </div>
+      <div id="evalResult" class="hidden">
+        <div class="metric-row">
+          <div class="metric-card acc"><div class="metric-label">Accuracy</div>
+            <div class="metric-value" id="evalAcc">—</div></div>
+          <div class="metric-card n"><div class="metric-label">样本数</div>
+            <div class="metric-value" id="evalN">—</div></div>
+          <div id="evalClassMetrics" class="class-metrics"></div>
+        </div>
+        <div class="eval-cards">
+          <div class="card">
+            <h3 class="card-title">混淆矩阵</h3>
+            <img id="evalCm" class="cm-img" alt="混淆矩阵">
+          </div>
+          <div class="card">
+            <h3 class="card-title">错误样本（最多 12 张）</h3>
+            <div id="wrongGrid" class="wrong-grid"></div>
+          </div>
+        </div>
+      </div>
+      <div id="evalEmpty" class="empty-state">
+        <div class="empty-icon">📊</div>
+        <p>选择数据集目录，一键输出 Accuracy、<br>各类 precision/recall/F1、混淆矩阵与错误样本</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  CNN 推理服务 · Flask + ONNX Runtime · 图片仅在本机处理，不会上传到任何服务器
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

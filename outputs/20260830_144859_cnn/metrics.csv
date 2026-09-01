@@ -1,0 +1,2 @@
+epoch,train_loss,train_acc,val_loss,val_acc,val_precision,val_recall,val_f1,val_auc,lr,epoch_time_s,best
+1,1.3212,0.5208,173.5433,0.3125,0.0000,0.0000,0.0000,0.4384,5.00e-05,1.7,best
